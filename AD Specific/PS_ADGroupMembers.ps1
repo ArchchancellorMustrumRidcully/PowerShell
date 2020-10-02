@@ -29,25 +29,69 @@
         PS_ADGroupMembers.ps1 SecGrp_Wizards
     #>
     
-
-
 $param1=$args[0]
 if ($param1.length -lt  1){
     write-host("We need a name...")
     }
 else {
-        $MyGroups = get-adgroup -Filter "name -like '*$param1*'" -Properties * | select -expandproperty name
-        foreach ($MG in $MyGroups) {
-            write-host ""
-            write-host "Group: $MG"
-            $MyUsers = Get-ADGroupMember -Identity $MG -Recursive | select -expandproperty  name
-            if ($MyUsers.count -gt 0){
-                        foreach ($MU in $MyUsers) {
+        $Highlander = 0
+        ## Check to see if the group exists in the first place ##
+        try
+            {
+            $GroupExists = Get-ADGroup -Identity $param1 -ErrorAction:SilentlyContinue
+            $MyGroups = get-adgroup -Filter "name -like '$param1'" -Properties * | select -expandproperty name
+            foreach ($MG in $MyGroups) 
+                {
+                write-host ""
+
+                write-host "Group: $MG"
+                $MyUsers = Get-ADGroupMember -Identity $MG -Recursive | select -expandproperty  name
+                if ($MyUsers.count -gt 0)
+                    {
+                    foreach ($MU in $MyUsers) 
+                        {
                         write-host "Member: $MU"
                         }
                     }
-            else {
-                write-host "No members"
+                else 
+                    {
+                    write-host "No members"
+                    }
                 }
+                write-host ""
+                write-host "If you would like to see all permutations of $param1, try leaving a letters off the end.  Example:"
+                $shorter = $param1.Substring(0,$param1.Length-5)
+                write-host "PS_ADGroupMembers.ps1 $shorter"
             }
-}
+        catch
+            {
+            write-host ""
+                    write-host "Unable to find $param1 specifically, let's check for permutations."    
+                $MyGroups = get-adgroup -Filter "name -like '*$param1*'" -Properties * | select -expandproperty name
+                foreach ($MG in $MyGroups) 
+                    {
+                    
+                    write-host ""
+                    write-host "Group: $MG"
+                    $MyUsers = Get-ADGroupMember -Identity $MG -Recursive | select -expandproperty  name
+                    if ($MyUsers.count -gt 0)
+                        {
+                        foreach ($MU in $MyUsers) 
+                            {
+                            write-host "Member: $MU"
+                            }
+                        }
+                    else 
+                        {
+                        write-host "No members"
+                        }
+                    }
+            }
+            }
+        
+            
+
+        
+        
+        
+
