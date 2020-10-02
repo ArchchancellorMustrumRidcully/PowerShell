@@ -59,14 +59,14 @@ else {
                     }
                 }
                 write-host ""
-                write-host "If you would like to see all permutations of $param1, try leaving a letters off the end.  Example:"
-                $shorter = $param1.Substring(0,$param1.Length-5)
-                write-host "PS_ADGroupMembers.ps1 $shorter"
+                write-host "If you would like to see all permutations of $param1, try leaving a letters off the end to make other possibilities appear.  Example:" -ForegroundColor Green
+                $shorter = $param1.Substring(0,$param1.Length-6)
+                write-host "PS_ADGroupMembers.ps1 $shorter" -ForegroundColor Green
             }
         catch
             {
             write-host ""
-                    write-host "Unable to find $param1 specifically, let's check for permutations."    
+            write-host "Unable to find $param1 specifically, let's check for permutations."  -ForegroundColor Yellow
                 $MyGroups = get-adgroup -Filter "name -like '*$param1*'" -Properties * | select -expandproperty name
                 foreach ($MG in $MyGroups) 
                     {
@@ -86,12 +86,5 @@ else {
                         write-host "No members"
                         }
                     }
-            }
-            }
-        
-            
-
-        
-        
-        
-
+                }
+            }        
