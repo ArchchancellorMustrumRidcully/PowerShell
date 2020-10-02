@@ -30,11 +30,13 @@
     #>
     
 $param1=$args[0]
-if ($param1.length -lt  1){
+
+if ($param1.length -lt  1)
+    {
     write-host("We need a name...")
     }
-else {
-        $Highlander = 0
+else
+    {
         ## Check to see if the group exists in the first place ##
         try
             {
@@ -85,7 +87,6 @@ else {
                         {
                         write-host "No members"
                         }
-                    }
                 }
             }
-        
+        }
