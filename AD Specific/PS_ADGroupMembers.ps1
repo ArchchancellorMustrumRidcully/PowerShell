@@ -2,7 +2,7 @@
 # AD Group Member Search
 # BeaneM
 # 2020-10-02
-# v1.0
+# v1.2
 ##############################
 # Published to GitHub
 # 2020-10-02
@@ -12,9 +12,9 @@
     .SYNOPSIS
         Search for matching AD Groups and print members to screen
     .DESCRIPTION
-        Take input and search for any matching AD Groups, then print members to the screen.
+        Take input and search for a specific match and if not, found, then any matching AD Groups.  Print any found members to the screen.
         Note(s):
-            - search is *bidirectional* and not anchored at start
+            - permutation search is *bidirectional* and not anchored at start
 
     .PARAMETER undefined
         The AD Group name
@@ -87,4 +87,5 @@ else {
                         }
                     }
                 }
-            }        
+            }
+        
