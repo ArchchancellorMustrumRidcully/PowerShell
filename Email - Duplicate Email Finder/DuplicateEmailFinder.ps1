@@ -123,11 +123,7 @@ $USERS = foreach ($User in $GetOU)
     $Current_Email=$CurrentUserDetails.EmailAddress
     $Current_WWW=$CurrentUserDetails.wWWHomePage
     $Current_fax=$CurrentUserDetails.facsimileTelephoneNumber
-    $Current_iphone=$ADCurrentUserDetailsUser.ipPhone
-	$Current_FirstName=$CurrentUserDetails.GivenName
-	$Current_LastName=$CurrentUserDetails.sn
-    $Current_middleName=$CurrentUserDetails.middleName
-    $Current_Office=$CurrentUserDetails.Office 
+    $Current_iphone=$CurrentUserDetails.ipPhone
 
     if ($Current_Email)
         {
@@ -154,10 +150,10 @@ $USERS = foreach ($User in $GetOU)
 
     if ($WriteHost -eq 1)
         {write-host "Finished queuing.  Checking array for duplicates"}
-    $EmailUnique=$EmailList | select –unique
+    $EmailUnique=$EmailList | select â€“unique
     
     # PassThru removes the compare stamp on the output
-    $Duplicates = Compare-object –referenceobject $EmailUnique –differenceobject $EmailList -PassThru 
+    $Duplicates = Compare-object â€“referenceobject $EmailUnique â€“differenceobject $EmailList -PassThru 
     
     $HTMLDuplicates = [System.Collections.ArrayList]@()
     
