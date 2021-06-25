@@ -38,7 +38,10 @@ if ($param1.length -lt  1)
 else
     {
         ## Check to see if the group exists in the first place ##
-        Set-Content -Path ADGroupmembers.txt -Value "" -Force
+        
+        $OUTPUT="C:\temp\ADGroupmembers1.txt"
+        
+        Set-Content -Path $OUTPUT -Value "" -Force
         try
             {
             $GroupExists = Get-ADGroup -Identity $param1 -ErrorAction:SilentlyContinue
@@ -49,9 +52,9 @@ else
 
                 write-host "Group: $MG"
                 
-                Add-Content -Path ADGroupmembers.txt -Value "*************************" -Force
-                Add-Content -Path ADGroupmembers.txt -Value $MG -Force
-                Add-Content -Path ADGroupmembers.txt -Value "*************************" -Force
+                Add-Content -Path $OUTPUT -Value "*************************" -Force
+                Add-Content -Path $OUTPUT -Value $MG -Force
+                Add-Content -Path $OUTPUT -Value "*************************" -Force
                 $MyUsers = Get-ADGroupMember -Identity $MG -Recursive | select -expandproperty  name
                 if ($MyUsers.count -gt 0)
                     {
@@ -59,7 +62,7 @@ else
                     foreach ($MU in $MyUsers) 
                         {
                         write-host "[$LISTCOUNTER] $MU"
-                        Add-Content -Path ADGroupmembers.txt -Value "       [$LISTCOUNTER] $MU" -Force
+               #         Add-Content -Path ADGroupmembers2.txt -Value "       [$LISTCOUNTER] $MU" -Force
                         $LISTCOUNTER++
                         }
                     }
@@ -83,9 +86,9 @@ else
                     
                     write-host ""
                     write-host "Group: $MG"
-                Add-Content -Path ADGroupmembers.txt -Value "*************************" -Force
-                Add-Content -Path ADGroupmembers.txt -Value $MG -Force
-                Add-Content -Path ADGroupmembers.txt -Value "*************************" -Force
+                Add-Content -Path $OUTPUT -Value "*************************" -Force
+                Add-Content -Path $OUTPUT -Value $MG -Force
+                Add-Content -Path $OUTPUT -Value "*************************" -Force
                     $MyUsers = Get-ADGroupMember -Identity $MG -Recursive | select -expandproperty  name
                     if ($MyUsers.count -gt 0)
                         {
@@ -93,7 +96,7 @@ else
                         foreach ($MU in $MyUsers) 
                             {
                             write-host "[$LISTCOUNTER] $MU"
-                            Add-Content -Path ADGroupmembers.txt -Value "       [$LISTCOUNTER] $MU" -Force
+                        #    Add-Content -Path $OUTPUT -Value "       [$LISTCOUNTER] $MU" -Force
                             $LISTCOUNTER++
                             }
                         }
