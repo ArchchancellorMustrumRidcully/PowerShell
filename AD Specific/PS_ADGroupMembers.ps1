@@ -1,8 +1,8 @@
 ##############################
 # AD Group Member Search
 # BeaneM
-# 2020-10-02
-# v1.2
+# 2022-01-25
+# v1.3
 ##############################
 # Published to GitHub
 # 2020-10-02
@@ -29,6 +29,9 @@
         PS_ADGroupMembers.ps1 SecGrp_Wizards
     #>
     
+### USER VARIABLES ####
+$OUTPUT="C:\temp\ADGroupmembers1.csv"
+    
 $param1=$args[0]
 
 if ($param1.length -lt  1)
@@ -37,11 +40,9 @@ if ($param1.length -lt  1)
     }
 else
     {
-        ## Check to see if the group exists in the first place ##
-        
-        $OUTPUT="C:\temp\ADGroupmembers1.txt"
-        
-        Set-Content -Path $OUTPUT -Value "" -Force
+    ## Check to see if the group exists in the first place ##
+    #Set-Content -Path $OUTPUT -Value "" -Force
+        Set-Content -Path $OUTPUT -Value "Group,Individual" -Force
         try
             {
             $GroupExists = Get-ADGroup -Identity $param1 -ErrorAction:SilentlyContinue
@@ -49,20 +50,20 @@ else
             foreach ($MG in $MyGroups) 
                 {
                 write-host ""
-
                 write-host "Group: $MG"
                 
-                Add-Content -Path $OUTPUT -Value "*************************" -Force
-                Add-Content -Path $OUTPUT -Value $MG -Force
-                Add-Content -Path $OUTPUT -Value "*************************" -Force
-                $MyUsers = Get-ADGroupMember -Identity $MG -Recursive | select -expandproperty  name
+                #Add-Content -Path $OUTPUT -Value "*************************" -Force
+                #Add-Content -Path $OUTPUT -Value $MG -Force
+                #Add-Content -Path $OUTPUT -Value "*************************" -Force
+                $MyUsers = Get-ADGroupMember -Identity $MG -Recursive | select -expandproperty samaccountname
                 if ($MyUsers.count -gt 0)
                     {
                     $LISTCOUNTER=1
                     foreach ($MU in $MyUsers) 
                         {
                         write-host "[$LISTCOUNTER] $MU"
-               #         Add-Content -Path ADGroupmembers2.txt -Value "       [$LISTCOUNTER] $MU" -Force
+                        #Add-Content -Path ADGroupmembers2.txt -Value "       [$LISTCOUNTER] $MU" -Force
+                        Add-Content -Path $OUTPUT -Value "$MG,$MU" -Force
                         $LISTCOUNTER++
                         }
                     }
@@ -75,7 +76,7 @@ else
                 write-host "If you would like to see all permutations of $param1, try leaving a letters off the end to make other possibilities appear.  Example:" -ForegroundColor Green
                 $shorter = $param1.Substring(0,$param1.Length-6)
                 write-host "PS_ADGroupMembers.ps1 $shorter" -ForegroundColor Green
-            }
+            }   
         catch
             {
             write-host ""
@@ -86,17 +87,22 @@ else
                     
                     write-host ""
                     write-host "Group: $MG"
-                Add-Content -Path $OUTPUT -Value "*************************" -Force
-                Add-Content -Path $OUTPUT -Value $MG -Force
-                Add-Content -Path $OUTPUT -Value "*************************" -Force
-                    $MyUsers = Get-ADGroupMember -Identity $MG -Recursive | select -expandproperty  name
+                    #Add-Content -Path $OUTPUT -Value "*************************" -Force
+                    #Add-Content -Path $OUTPUT -Value $MG -Force
+                    #Add-Content -Path $OUTPUT -Value "*************************" -Force
+
+                    $MyUsers = Get-ADGroupMember -Identity $MG -Recursive | select -expandproperty samaccountname
+                    
+                    #$MyUsers = Get-ADGroupMember -Identity $MG -Recursive | select -expandproperty samaccountname
+                    #$MyUsers = Get-ADGroupMember -Identity $MG -Recursive | Get-ADUser -Properties SamAccountName,GivenName,sn,Mail | Select SamAccountName,GivenName,sn,Mail 
+                    #| Export-CSV -Path “C:\Temp\GroupMembers.csv” -NoTypeInformation
                     if ($MyUsers.count -gt 0)
                         {
                         $LISTCOUNTER=1
                         foreach ($MU in $MyUsers) 
                             {
-                            write-host "[$LISTCOUNTER] $MU"
-                        #    Add-Content -Path $OUTPUT -Value "       [$LISTCOUNTER] $MU" -Force
+                            #write-host "[$LISTCOUNTER] $MU"
+                            Add-Content -Path $OUTPUT -Value "$MG,$MU" -Force
                             $LISTCOUNTER++
                             }
                         }
@@ -105,5 +111,11 @@ else
                         write-host "No members"
                         }
                 }
+            # End of Group Check
+            write-host "" -ForegroundColor green -BackgroundColor black
+            write-host "------------------------------------------------------" -ForegroundColor green -BackgroundColor black
+            write-host "**** CSV Export at $OUTPUT **** " -ForegroundColor green -BackgroundColor black
+            write-host "------------------------------------------------------" -ForegroundColor green -BackgroundColor black
+            write-host "" -ForegroundColor green -BackgroundColor black
             }
         }
