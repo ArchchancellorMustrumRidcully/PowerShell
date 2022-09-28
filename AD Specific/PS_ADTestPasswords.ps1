@@ -1,8 +1,6 @@
 ####################################################################
 # Test AD credentials 
 #
-# Used for testing user\pass pairs in bulk against Active Directory
-#
 # Requirements: "input.csv" with two columns: username & password
 #
 # Outputs: results to csv file
