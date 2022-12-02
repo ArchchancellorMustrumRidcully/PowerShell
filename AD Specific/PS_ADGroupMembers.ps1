@@ -1,8 +1,8 @@
 ##############################
 # AD Group Member Search
 # BeaneM
-# 2022-01-25
-# v1.3
+# 2022-01-25  MAB v1.3
+# 2022-12-02  MAB v1.4 Changed output to individual groups
 ##############################
 # Published to GitHub
 # 2020-10-02
@@ -30,7 +30,7 @@
     #>
     
 ### USER VARIABLES ####
-$OUTPUT="C:\temp\ADGroupmembers1.csv"
+$OUTPUTDIR="C:\temp\"
     
 $param1=$args[0]
 
@@ -42,26 +42,30 @@ else
     {
     ## Check to see if the group exists in the first place ##
     #Set-Content -Path $OUTPUT -Value "" -Force
-        Set-Content -Path $OUTPUT -Value "Group,Individual" -Force
+        
         try
             {
             $GroupExists = Get-ADGroup -Identity $param1 -ErrorAction:SilentlyContinue
-            $MyGroups = get-adgroup -Filter "name -like '$param1'" -Properties * | select -expandproperty name
+            $MyGroups = get-adgroup -Filter "name -like '$param1'" -Properties * | select -expandproperty name 
             foreach ($MG in $MyGroups) 
                 {
                 write-host ""
                 write-host "Group: $MG"
-                
+                $OUTPUT=$OUTPUTDIR+$MG+".csv"
+                Set-Content -Path $OUTPUT -Value "Group,Individual,Email" -Force
                 #Add-Content -Path $OUTPUT -Value "*************************" -Force
                 #Add-Content -Path $OUTPUT -Value $MG -Force
                 #Add-Content -Path $OUTPUT -Value "*************************" -Force
-                $MyUsers = Get-ADGroupMember -Identity $MG -Recursive | select -expandproperty samaccountname
+                $MyUsers = Get-ADGroupMember -Identity $MG -Recursive | select -expandproperty samaccountname, email
                 if ($MyUsers.count -gt 0)
                     {
                     $LISTCOUNTER=1
+                    $MyUsers = $MyUsers | Sort-Object
                     foreach ($MU in $MyUsers) 
                         {
-                        write-host "[$LISTCOUNTER] $MU"
+                        $ME = Get-ADUser -Identity $MU -properties mail | Select -expandproperty mail
+                            write-host "[$LISTCOUNTER] $MU"
+                            Add-Content -Path $OUTPUT -Value "$MG,$MU,$ME" -Force
                         #Add-Content -Path ADGroupmembers2.txt -Value "       [$LISTCOUNTER] $MU" -Force
                         Add-Content -Path $OUTPUT -Value "$MG,$MU" -Force
                         $LISTCOUNTER++
@@ -84,7 +88,8 @@ else
                 $MyGroups = get-adgroup -Filter "name -like '*$param1*'" -Properties * | select -expandproperty name
                 foreach ($MG in $MyGroups) 
                     {
-                    
+                    $OUTPUT=$OUTPUTDIR+$MG+".csv"
+                    Set-Content -Path $OUTPUT -Value "Group,Individual,Email" -Force
                     write-host ""
                     write-host "Group: $MG"
                     #Add-Content -Path $OUTPUT -Value "*************************" -Force
@@ -99,10 +104,12 @@ else
                     if ($MyUsers.count -gt 0)
                         {
                         $LISTCOUNTER=1
+                        $MyUsers = $MyUsers | Sort-Object
                         foreach ($MU in $MyUsers) 
                             {
-                            #write-host "[$LISTCOUNTER] $MU"
-                            Add-Content -Path $OUTPUT -Value "$MG,$MU" -Force
+                            $ME = Get-ADUser -Identity $MU -properties mail | Select -expandproperty mail
+                            write-host "[$LISTCOUNTER] $MU"
+                            Add-Content -Path $OUTPUT -Value "$MG,$MU,$ME" -Force
                             $LISTCOUNTER++
                             }
                         }
