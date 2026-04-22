@@ -1,6 +1,8 @@
 ####################################################################
 # Test AD credentials 
 #
+# Used for testing user\pass pairs in bulk against Active Directory
+#
 # Requirements: "input.csv" with two columns: username & password
 #
 # Outputs: results to csv file
@@ -15,7 +17,8 @@
 #                       Added deliminator for REN-ISAC format
 #                       Added emaildomain variable for portability
 #                       Updated output
-#
+# 1.2  MAB   20221026 - added bad password visual check
+# 1.3  MAB   20221109 - added ENTER to exit catch
 #####################################################################
 
 #######################################################
@@ -24,9 +27,9 @@
 
 $deliminator=":";  # set the import file deliminator
 $importFile=".\input.csv"; #set the import file and path
-$resultsFile=".\Results"; #set the results prepended filename and path 
-$emaildomain = "UnseenUniversity.edu"
-
+$resultsFile=".\output\Results"; #set the results prepended filename and path 
+$emaildomain = "UnseenUniversity.edu";
+$SLEEPTIMER = 5; # Pauses between bad passwd | check | bad passwd
 #######################################################
 # Functions
 #######################################################
@@ -40,16 +43,17 @@ function WriteLog ($Destinaton, $Msg)
 function Check-ADAuth 
     {
     param($NAME,$PASS,$ORIGINALNAME)
-
     ###################################################
     # Check AD to see if the password is good\bad
     # THIS INCREMENTS BADPASSWORD COUNT!!!
     ###################################################
 
+    $passLastSet = Get-ADUser -Identity $NAME -Properties passwordlastset | Select-Object -expandproperty passwordlastset 
+
     $RESULT = (New-Object DirectoryServices.DirectoryEntry "",$NAME,$PASS).psbase.name -ne $null
     #$TIMESTAMP = $Date.ToString("yyyyMMdd,hhmmss")
 
-    WriteLog -Destinaton $PRIMARYLOG -Msg "$NAME,$PASS,$RESULT,$ORIGINALNAME"
+    WriteLog -Destinaton $PRIMARYLOG -Msg "$NAME,$PASS,$RESULT,$passLastSet,$ORIGINALNAME"
 
     if ($RESULT -like "TRUE")
         {
@@ -118,7 +122,7 @@ function ReturnSamAccountName
 $DATE = Get-Date
 $DATETIME = $Date.ToString("yyyyMMdd-hhmmss")
 $PRIMARYLOG="$resultsFile-$DATETIME.csv"  
-WriteLog -Destinaton $PRIMARYLOG -Msg "Username,Password,Result,Notes"
+WriteLog -Destinaton $PRIMARYLOG -Msg "Username,Password,Result,PasswordLastSet,Notes"
 
 #####################################################
 # INPUT SETUP
@@ -163,11 +167,17 @@ foreach ($account in $Incoming)
     if ($SAMACCOUNT -eq $NULL)
         {
         Write-Host "AD ACCOUNT NOT FOUND - $USERNAME - NO ACTION POSSIBLE" -fore Yellow
-        WriteLog -Destinaton $PRIMARYLOG -Msg "$USERNAME,$PASSWORD,ACCOUNT NOT FOUND,SAMACCOUNTNAME returned empty"
+        WriteLog -Destinaton $PRIMARYLOG -Msg "$USERNAME,$PASSWORD,ACCOUNT NOT FOUND,,SAMACCOUNTNAME returned empty"
         }
     else
         {
+        $badpasscountOne = Get-ADUser -identity $SAMACCOUNT -Properties * | Select-Object -expandproperty badpwdcount
         Check-ADAuth -name $SAMACCOUNT -pass $PASSWORD -original $USERNAME
+        Start-Sleep $SLEEPTIMER
+        $badpasscountTwo = Get-ADUser -identity $SAMACCOUNT -Properties * | Select-Object -expandproperty badpwdcount
+        Write-Host "$SAMACCOUNT - BadPassCountOne: [$badpasscountOne] - BadPassCountTwo: [$badpassCountTwo]"
+
+        
         }
     }
 ####################################################
@@ -178,3 +188,5 @@ write-host ""
 write-host "***********************************************************************************************************" -fore Yellow
 write-host "* Please be aware that the running of this script increases BadPasswordCount for each account it touches. *" -fore Yellow
 write-host "***********************************************************************************************************" -fore Yellow
+
+$response = read-host "Press Enter to exit"
